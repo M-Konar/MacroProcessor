@@ -12,5 +12,8 @@ public class MemoryEntity {
 		address = 0;
 		whoNeedsMe = new ArrayList<String>();
 	}
+	public String toString() {
+		return this.busy + " " + this.address + " ";
+	}
 	
 }

@@ -34,7 +34,7 @@ public class Simulation {
 		}
 	}
 	public static void simulate() {
-		
+		System.out.println("asdsa");
 	}
 	
 	public void loadInput() {

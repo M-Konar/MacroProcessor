@@ -1,4 +1,3 @@
-import java.io.File;
 import java.util.*;
 public class Simulation {
 	Hashtable<String, Integer> type_cycles = new Hashtable<String, Integer>();
@@ -65,7 +64,7 @@ public class Simulation {
 		// this function represents the flow 
 		//TODO make sure to print at the end of each cycle 
 		int instTableIndex = 0;
-		boolean isIssued = false;
+		//boolean isIssued = false;
 		while(!isExecutionDone()) {
 			TableEntity currentTableRow = instructionTable.get(instTableIndex);
 			int index;

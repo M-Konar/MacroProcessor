@@ -3,16 +3,17 @@
 import java.util.ArrayList;
 
 class ALUEntity{
+	int index;
 	boolean busy;
 	String op;
-	String Vj;
-	String Vk;
+	double Vj;
+	double Vk;
 	String Qj;
 	String Qk;
 	ArrayList<String> whoNeedsMe;
 	public ALUEntity(){
 		busy = false;
-		op = "";Vj="";Vk="";Qj="";Qk="";
+		op = "";Vj=0;Vk=0;Qj="";Qk="";
 		whoNeedsMe = new ArrayList<String>();
 	}
 }

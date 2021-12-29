@@ -42,8 +42,13 @@ public class Simulation {
 		}
 		return -1;
 	}
-	public static boolean isFull2(ArrayList<ALUEntity> array,int size) {
-		return false;
+	public static int isFull2(ArrayList<ALUEntity> array,int size) {
+		for (int i =0;i<size;i++) {
+			if(array.get(i).busy==false) {
+				return i;
+			}
+		}
+		return -1;
 	}
 	
 	public void occupyInRegFile(String regName,String occupiedBy) {
@@ -72,6 +77,10 @@ public class Simulation {
 						loadStation.get(index).address = Integer.parseInt(currentTableRow.j);
 						currentTableRow.issueCycle = clock;
 						occupyInRegFile(currentTableRow.dist,"L"+index);
+						instTableIndex++;
+					}
+					else {
+						
 					}
 				break;
 				case "S.D":
@@ -80,22 +89,41 @@ public class Simulation {
 						storeStation.get(index).busy=true;
 						storeStation.get(index).address = Integer.parseInt(currentTableRow.j);
 						currentTableRow.issueCycle = clock;
+						occupyInRegFile(currentTableRow.dist,"S"+index);
+						instTableIndex++;
 					}
 				break;
-				case "MUL.D":if(!isFull2(mulDivStation,3)) {
+				case "MUL.D":
+					index = isFull2(mulDivStation,3);
+					if(index!=-1) {
+						currentTableRow.issueCycle = clock;
+						occupyInRegFile(currentTableRow.dist,"M"+index);
+						instTableIndex++;
 					
+					}
+				break;
+				case "DIV.D":
+					index = isFull2(mulDivStation,3);
+					if(index!=-1) {
+					currentTableRow.issueCycle = clock;
+					occupyInRegFile(currentTableRow.dist,"D"+index);
+					instTableIndex++;
 				}
 				break;
-				case "DIV.D":if(!isFull2(mulDivStation,3)) {
-					
+				case "ADD.D":
+					index = isFull2(addSubStation,3);
+					if(index!=-1) {
+					currentTableRow.issueCycle = clock;
+					occupyInRegFile(currentTableRow.dist,"A"+index);
+					instTableIndex++;
 				}
 				break;
-				case "ADD.D":if(!isFull2(addSubStation,3)) {
-					
-				}
-				break;
-				case "SUB.D":if(!isFull2(addSubStation,3)) {
-	
+				case "SUB.D":
+					index = isFull2(addSubStation,3);
+					if(index!=-1) {
+					currentTableRow.issueCycle = clock;
+					occupyInRegFile(currentTableRow.dist,"SU"+index);
+					instTableIndex++;
 				}
 				break;
 			}

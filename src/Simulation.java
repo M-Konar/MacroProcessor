@@ -17,7 +17,7 @@ public class Simulation {
 			memory.add(0.0);
 		}
 		for (int i = 0; i < 11; i++) {
-			registerFile.add(new RegisterEntity("F"+i,"0",0));
+			registerFile.add(new RegisterEntity("F"+i,"0",i));
 		}
 		System.out.println("added");
 		for (int i = 0;i<2;i++) {
@@ -69,9 +69,7 @@ public class Simulation {
 	public void occupyInRegFile(String regName,String occupiedBy) {
 		for (int i = 0; i < registerFile.size(); i++) {
 			if(registerFile.get(i).regName.equals(regName)) {
-				if(registerFile.get(i).Qi.equals("0")) {
-					registerFile.get(i).Qi=occupiedBy;
-				}
+				registerFile.get(i).Qi=occupiedBy;
 			}
 		}
 	}
@@ -117,6 +115,7 @@ public void whoNeedsMeAssign(ArrayList<String> whoNM,String required,double valu
 					mulDivStation.get(index).Qk="";
 					mulDivStation.get(index).Vk= value;
 				}
+				whoNM.remove(i--);
           break;
 			case "A":if(addSubStation.get(index).Qj.equals(required)){
 				addSubStation.get(index).Qj="";
@@ -126,11 +125,55 @@ public void whoNeedsMeAssign(ArrayList<String> whoNM,String required,double valu
 					addSubStation.get(index).Qk="";
 					addSubStation.get(index).Vk= value;
 				}
+				whoNM.remove(i--);
 				break;
 		}
 
 	}
 }
+
+	public void removeFromRegFile(String Qi, double value) {
+		for (int i = 0; i < registerFile.size(); i++) {
+			if(registerFile.get(i).Qi.equals(Qi)) {
+				registerFile.get(i).Qi="0";
+				registerFile.get(i).value=value;
+			}
+		}
+	}
+	public void executeStage(ArrayList<ALUEntity> station, String st, ArrayList<ArrayList<String>> whoNeedsMeList
+			,ArrayList<String> opNameList , ArrayList<Double> valuesList) {
+		for (int i = 0; i < station.size(); i++) {
+			if(station.get(i).busy) {
+			int instIndex=station.get(i).index;
+			String opName= instructionTable.get(instIndex).opCode;
+			if(station.get(i).Qj.equals("")&& station.get(i).Qk.equals("")&& instructionTable.get(instIndex).issueCycle !=0){
+				if(instructionTable.get(instIndex).eEndCycle!=0){
+					if(instructionTable.get(instIndex).writeResult==0){
+						double value=performOp(station.get(i).Vj,station.get(i).Vk,station.get(i).op);
+						//whoNeedsMeAssign(station.get(i).whoNeedsMe,st+i,value);
+						whoNeedsMeList.add(station.get(i).whoNeedsMe);
+						opNameList.add(st+i);
+						valuesList.add(value);
+						instructionTable.get(instIndex).writeResult=clock;
+						//station.set(i, new ALUEntity());
+						removeFromRegFile(st+i,value);
+					}
+				}else {
+					if (instructionTable.get(instIndex).eStartCycle == 0) {
+						instructionTable.get(instIndex).eStartCycle = clock;
+					} else {
+						int cycles = type_cycles.get(opName);
+						if (clock - instructionTable.get(instIndex).eStartCycle + 1 == cycles) {
+							instructionTable.get(instIndex).eEndCycle = clock;
+						}
+					}
+				}
+			}
+			}
+		}
+	}
+	// add F3,F2,F1
+	// add F4,F3,F1
 	public void simulate() {
 		// this function represents the flow 
 		//TODO make sure to print at the end of each cycle 
@@ -139,50 +182,13 @@ public void whoNeedsMeAssign(ArrayList<String> whoNM,String required,double valu
 
 		while(!isExecutionDone()) {
 			// Execution Section :(
-			for (int i = 0; i < addSubStation.size(); i++) {
-				int instIndex=addSubStation.get(i).index;
-				String opName= instructionTable.get(instIndex).opCode;
-				if(addSubStation.get(i).Qj.equals("")&& addSubStation.get(i).Qk.equals("")&& instructionTable.get(instIndex).issueCycle !=0){
-					if(instructionTable.get(instIndex).eEndCycle!=0){
-						if(instructionTable.get(instIndex).writeResult==0){
-							double value=performOp(addSubStation.get(i).Vj,addSubStation.get(i).Vk,addSubStation.get(i).op);
-							whoNeedsMeAssign(addSubStation.get(i).whoNeedsMe,"A"+i,value);
-							instructionTable.get(instIndex).writeResult=clock;
-						}
-					}else {
-						if (instructionTable.get(instIndex).eStartCycle == 0) {
-							instructionTable.get(instIndex).eStartCycle = clock;
-						} else {
-							int cycles = type_cycles.get(opName);
-							if (clock - instructionTable.get(instIndex).eStartCycle + 1 == cycles) {
-								instructionTable.get(instIndex).eEndCycle = clock;
-							}
-						}
-					}
-				}
-
-			}
-			for (int i = 0; i < mulDivStation.size(); i++) {
-				int instIndex = mulDivStation.get(i).index;
-				String opName = instructionTable.get(instIndex).opCode;
-				if (mulDivStation.get(i).Qj.equals("") && mulDivStation.get(i).Qk.equals("") && instructionTable.get(instIndex).issueCycle != 0) {
-					if (instructionTable.get(instIndex).eEndCycle != 0) {
-						if (instructionTable.get(instIndex).writeResult == 0) {
-							double value = performOp(mulDivStation.get(i).Vj, mulDivStation.get(i).Vk, mulDivStation.get(i).op);
-							whoNeedsMeAssign(mulDivStation.get(i).whoNeedsMe, "A" + i, value);
-							instructionTable.get(instIndex).writeResult = clock;
-						}
-					} else {
-						if (instructionTable.get(instIndex).eStartCycle == 0) {
-							instructionTable.get(instIndex).eStartCycle = clock;
-						} else {
-							int cycles = type_cycles.get(opName);
-							if (clock - instructionTable.get(instIndex).eStartCycle + 1 == cycles) {
-								instructionTable.get(instIndex).eEndCycle = clock;
-							}
-						}
-					}
-				}
+			ArrayList<ArrayList<String>> whoNeedsMeList = new ArrayList<ArrayList<String>>();
+			ArrayList<String> opNameList = new ArrayList<String>();
+			ArrayList<Double> valuesList = new ArrayList<Double>();
+			executeStage(addSubStation, "A",whoNeedsMeList,opNameList,valuesList);
+			executeStage(mulDivStation, "M",whoNeedsMeList,opNameList,valuesList);
+			for (int i = 0; i < whoNeedsMeList.size(); i++) {
+				whoNeedsMeAssign(whoNeedsMeList.get(i),opNameList.get(i),valuesList.get(i));
 			}
             //issue section :)
 			if(instTableIndex<instructionTable.size()) {
@@ -236,8 +242,6 @@ public void whoNeedsMeAssign(ArrayList<String> whoNM,String required,double valu
 
 							}
 							occupyInRegFile(currentTableRow.dist, "M" + index);
-							System.out.println(mulDivStation.get(index).op + " " + mulDivStation.get(index).busy + " " + mulDivStation.get(index).Vj + " " + mulDivStation.get(index).Vk
-									+ " " + mulDivStation.get(index).Qj + " " + mulDivStation.get(index).Qk);
 							mulDivStation.get(index).index = instTableIndex;
 							instTableIndex++;
 						}
@@ -269,8 +273,6 @@ public void whoNeedsMeAssign(ArrayList<String> whoNM,String required,double valu
 
 							}
 							occupyInRegFile(currentTableRow.dist, "M" + index);
-							System.out.println(mulDivStation.get(index).op + " " + mulDivStation.get(index).busy + " " + mulDivStation.get(index).Vj + " " + mulDivStation.get(index).Vk
-									+ " " + mulDivStation.get(index).Qj + " " + mulDivStation.get(index).Qk);
 							mulDivStation.get(index).index = instTableIndex;
 							instTableIndex++;
 						}
@@ -299,8 +301,6 @@ public void whoNeedsMeAssign(ArrayList<String> whoNM,String required,double valu
 								whoNeedsMe(op2, "A" + index);
 							}
 							occupyInRegFile(currentTableRow.dist, "A" + index);
-							System.out.println(addSubStation.get(index).op + " " + addSubStation.get(index).busy + " " + addSubStation.get(index).Vj + " " + addSubStation.get(index).Vk
-									+ " " + addSubStation.get(index).Qj + " " + addSubStation.get(index).Qk);
 							addSubStation.get(index).index = instTableIndex;
 							instTableIndex++;
 						}
@@ -329,9 +329,7 @@ public void whoNeedsMeAssign(ArrayList<String> whoNM,String required,double valu
 								addSubStation.get(index).Qk = op2;
 								whoNeedsMe(op2, "A" + index);
 							}
-							occupyInRegFile(currentTableRow.dist, "S" + index);
-							System.out.println(addSubStation.get(index).op + " " + addSubStation.get(index).busy + " " + addSubStation.get(index).Vj + " " + addSubStation.get(index).Vk
-									+ " " + addSubStation.get(index).Qj + " " + addSubStation.get(index).Qk);
+							occupyInRegFile(currentTableRow.dist, "A" + index);
 							addSubStation.get(index).index = instTableIndex;
 							instTableIndex++;
 						}
@@ -344,8 +342,19 @@ public void whoNeedsMeAssign(ArrayList<String> whoNM,String required,double valu
 			// in case there's an action on it, go do the action and update who needs me mechanism
 			// else skip the the instruction and go to the one after it 
 			//things to pay attention to: 
-
 			
+			
+			
+			//remove after issue
+			
+			for (int i = 0; i < opNameList.size(); i++) {
+				String op=opNameList.get(i).charAt(0)+"";
+				int index=Integer.parseInt(opNameList.get(i).substring(1,opNameList.get(i).length()));
+				switch(op){
+					case "A":addSubStation.set(index, new ALUEntity());break;
+					case "M":mulDivStation.set(index, new ALUEntity());break;
+				}
+			}
 			
 			printOutput();
 			clock++;	
@@ -372,7 +381,32 @@ public void whoNeedsMeAssign(ArrayList<String> whoNM,String required,double valu
 		
 	}
 	public  void printOutput() {
-		
+		System.out.println("Clock Cycle: " + clock);
+		System.out.println("RegFileContent");
+		for (int i = 0; i < registerFile.size(); i++) {
+			System.out.println(registerFile.get(i).regName + " " + registerFile.get(i).Qi + " " + registerFile.get(i).value + " ");
+		}
+		System.out.println("TableContent");
+		for (int i = 0; i < instructionTable.size(); i++) {
+			System.out.println(instructionTable.get(i).opCode + " " +instructionTable.get(i).dist 
+					+ " " +instructionTable.get(i).j + " " + instructionTable.get(i).k + " "
+					+ instructionTable.get(i).issueCycle + " " + instructionTable.get(i).eStartCycle + " "
+					+ instructionTable.get(i).eEndCycle + " " + instructionTable.get(i).writeResult + " ");
+		}
+		System.out.println("AddSubStation");
+		for (int i = 0; i < addSubStation.size(); i++) {
+			System.out.println(addSubStation.get(i).busy + " " + addSubStation.get(i).op + " " 
+					+ addSubStation.get(i).Vj + " " + addSubStation.get(i).Vk + " " 
+					+ addSubStation.get(i).Qj + " " + addSubStation.get(i).Qk + " "
+					+ addSubStation.get(i).whoNeedsMe + " " + addSubStation.get(i).index + " ");
+		}
+		System.out.println("MulDivStation");
+		for (int i = 0; i < mulDivStation.size(); i++) {
+			System.out.println(mulDivStation.get(i).busy + " " + mulDivStation.get(i).op + " " 
+					+ mulDivStation.get(i).Vj + " " + mulDivStation.get(i).Vk + " " 
+					+ mulDivStation.get(i).Qj + " " + mulDivStation.get(i).Qk + " "
+					+ mulDivStation.get(i).whoNeedsMe + " " + mulDivStation.get(i).index + " ");
+		}
 	}
 
 	public static void main (String [] args) {

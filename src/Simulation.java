@@ -31,10 +31,10 @@ public class Simulation {
 		}
 		type_cycles.put("L.D", 2);
 		type_cycles.put("S.D", 1);
-		type_cycles.put("MUL.D", 6);
-		type_cycles.put("DIV.D", 10);
-		type_cycles.put("ADD.D", 3);
-		type_cycles.put("SUB.D", 3);
+		type_cycles.put("MUL.D", 10);
+		type_cycles.put("DIV.D", 40);
+		type_cycles.put("ADD.D", 2);
+		type_cycles.put("SUB.D", 2);
 	}
 	
 	public static int isFull(ArrayList<MemoryEntity> array,int size) {
@@ -96,6 +96,9 @@ public double performOp(double reg1,double reg2,String op){
 
 			case "DIV": return reg1/reg2;
 
+			case "L": return memory.get((int)reg1);
+
+
 			default : return 0.0;
 		}
 }
@@ -140,7 +143,7 @@ public void whoNeedsMeAssign(ArrayList<String> whoNM,String required,double valu
 			}
 		}
 	}
-	public void executeStage(ArrayList<ALUEntity> station, String st, ArrayList<ArrayList<String>> whoNeedsMeList
+	public void executeStageALU(ArrayList<ALUEntity> station, String st, ArrayList<ArrayList<String>> whoNeedsMeList
 			,ArrayList<String> opNameList , ArrayList<Double> valuesList) {
 		for (int i = 0; i < station.size(); i++) {
 			if(station.get(i).busy) {
@@ -161,14 +164,80 @@ public void whoNeedsMeAssign(ArrayList<String> whoNM,String required,double valu
 				}else {
 					if (instructionTable.get(instIndex).eStartCycle == 0) {
 						instructionTable.get(instIndex).eStartCycle = clock;
-					} else {
+					}
 						int cycles = type_cycles.get(opName);
 						if (clock - instructionTable.get(instIndex).eStartCycle + 1 == cycles) {
 							instructionTable.get(instIndex).eEndCycle = clock;
 						}
+
+				}
+			}
+			}
+		}
+	}
+	public void executeStageMemS(ArrayList<MemoryEntity> station,String st,ArrayList<String> opNameList){
+		for (int i = 0; i < station.size(); i++) {
+			if(station.get(i).busy) {
+				int instIndex=station.get(i).index;
+				String opName= instructionTable.get(instIndex).opCode;
+				if(instructionTable.get(instIndex).issueCycle !=0){
+					if(instructionTable.get(instIndex).eEndCycle!=0){
+						if(instructionTable.get(instIndex).writeResult==0){
+							String regName = instructionTable.get(instIndex).dist;
+							for (int j = 0; j < registerFile.size(); j++) {
+								if(regName.equals(registerFile.get(j).regName) && registerFile.get(j).Qi=="0"){
+									memory.set(station.get(i).address,registerFile.get(j).value);
+								}
+							}
+							//whoNeedsMeAssign(station.get(i).whoNeedsMe,st+i,value);
+							opNameList.add(st+i);
+							instructionTable.get(instIndex).writeResult=clock;
+							//station.set(i, new ALUEntity());
+						}
+					}else {
+						if (instructionTable.get(instIndex).eStartCycle == 0) {
+							instructionTable.get(instIndex).eStartCycle = clock;
+						}
+						int cycles = type_cycles.get(opName);
+						if (clock - instructionTable.get(instIndex).eStartCycle + 1 == cycles) {
+							instructionTable.get(instIndex).eEndCycle = clock;
+						}
+
 					}
 				}
 			}
+		}
+
+	}
+	public void executeStageMemL(ArrayList<MemoryEntity> station,String st, ArrayList<ArrayList<String>> whoNeedsMeList
+			,ArrayList<String> opNameList , ArrayList<Double> valuesList){
+		for (int i = 0; i < station.size(); i++) {
+			if(station.get(i).busy) {
+				int instIndex=station.get(i).index;
+				String opName= instructionTable.get(instIndex).opCode;
+				if(instructionTable.get(instIndex).issueCycle !=0){
+					if(instructionTable.get(instIndex).eEndCycle!=0){
+						if(instructionTable.get(instIndex).writeResult==0){
+							double value=performOp(station.get(i).address,0,st);
+							//whoNeedsMeAssign(station.get(i).whoNeedsMe,st+i,value);
+							whoNeedsMeList.add(station.get(i).whoNeedsMe);
+							opNameList.add(st+i);
+							valuesList.add(value);
+							instructionTable.get(instIndex).writeResult=clock;
+							//station.set(i, new ALUEntity());
+							removeFromRegFile(st+i,value);
+						}
+					}else {
+						if (instructionTable.get(instIndex).eStartCycle == 0) {
+							instructionTable.get(instIndex).eStartCycle = clock;
+						}
+							int cycles = type_cycles.get(opName);
+							if (clock - instructionTable.get(instIndex).eStartCycle + 1 == cycles) {
+								instructionTable.get(instIndex).eEndCycle = clock;
+							}
+
+					}
+				}
 			}
 		}
 	}
@@ -185,8 +254,11 @@ public void whoNeedsMeAssign(ArrayList<String> whoNM,String required,double valu
 			ArrayList<ArrayList<String>> whoNeedsMeList = new ArrayList<ArrayList<String>>();
 			ArrayList<String> opNameList = new ArrayList<String>();
 			ArrayList<Double> valuesList = new ArrayList<Double>();
-			executeStage(addSubStation, "A",whoNeedsMeList,opNameList,valuesList);
-			executeStage(mulDivStation, "M",whoNeedsMeList,opNameList,valuesList);
+			executeStageALU(addSubStation, "A",whoNeedsMeList,opNameList,valuesList);
+			executeStageALU(mulDivStation, "M",whoNeedsMeList,opNameList,valuesList);
+			executeStageMemL(loadStation, "L",whoNeedsMeList,opNameList,valuesList);
+			executeStageMemS(storeStation, "S",opNameList);
+
 			for (int i = 0; i < whoNeedsMeList.size(); i++) {
 				whoNeedsMeAssign(whoNeedsMeList.get(i),opNameList.get(i),valuesList.get(i));
 			}
@@ -204,8 +276,6 @@ public void whoNeedsMeAssign(ArrayList<String> whoNM,String required,double valu
 							occupyInRegFile(currentTableRow.dist, "L" + index);
 							loadStation.get(index).index = instTableIndex;
 							instTableIndex++;
-						} else {
-
 						}
 						break;
 					case "S.D":
@@ -353,6 +423,8 @@ public void whoNeedsMeAssign(ArrayList<String> whoNM,String required,double valu
 				switch(op){
 					case "A":addSubStation.set(index, new ALUEntity());break;
 					case "M":mulDivStation.set(index, new ALUEntity());break;
+					case "L":loadStation.set(index, new MemoryEntity());break;
+					case "S":storeStation.set(index,new MemoryEntity());break;
 				}
 			}
 			
@@ -414,15 +486,19 @@ public void whoNeedsMeAssign(ArrayList<String> whoNM,String required,double valu
 		Simulation s =new Simulation();
 
 		ArrayList<TableEntity> test=new ArrayList<TableEntity>();
-		test.add(new TableEntity("MUL.D","F3","F2","F1"));
-		test.add(new TableEntity("ADD.D","F6","F4","F1"));
-		test.add(new TableEntity("DIV.D","F1","F3","F1"));
-		test.add(new TableEntity("SUB.D","F3","F1","F6"));
-		test.add(new TableEntity("SUB.D","F5","F6","F1"));
-		test.add(new TableEntity("SUB.D","F10","F4","F2"));
-		test.add(new TableEntity("ADD.D","F6","F4","F1"));
+		//test.add(new TableEntity("S.D","F7","7","0"));
+		test.add(new TableEntity("L.D","F6","32","0"));
+		test.add(new TableEntity("L.D","F2","44","0"));
+		test.add(new TableEntity("MUL.D","F0","F2","F4"));
+		//.add(new TableEntity("ADD.D","F6","F4","F1"));
+		//test.add(new TableEntity("DIV.D","F1","F3","F1"));
+		test.add(new TableEntity("SUB.D","F8","F2","F6"));
+		test.add(new TableEntity("DIV.D","F10","F0","F6"));
+		//test.add(new TableEntity("SUB.D","F5","F6","F1"));
+		//test.add(new TableEntity("SUB.D","F10","F4","F2"));
+		test.add(new TableEntity("ADD.D","F6","F8","F2"));
 		s.initialize(test);
 		s.simulate();
-
+		System.out.println(s.memory.get(7));
 	}
 }

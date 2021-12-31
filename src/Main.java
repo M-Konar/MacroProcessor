@@ -2,7 +2,7 @@ import java.io.File;  // Import the File class
 import java.io.FileNotFoundException;  // Import this class to handle errors
 import java.util.Scanner;
 public class Main {
-public static String Interpret(String Instruction) {
+public static void Interpret(String Instruction) {
 	String[] instruction=Instruction.split(" ");
 	String type="";
 	if(instruction[0].equals("L.D")) {
@@ -21,12 +21,17 @@ public static String Interpret(String Instruction) {
 	if(type.equals("load")||type.equals("store")) {
 		String dstsrc=instruction[1].substring(0,instruction[1].length()-1);
 		int address=Integer.valueOf(instruction[2]);
-		return type+" "+dstsrc+" "+address;
+		String add=instruction[2];
+		if(type.equals("load")) {
+		TableEntity ld=new TableEntity(type,dstsrc,add,null);
+		}else {
+			TableEntity st=new TableEntity(type,add,dstsrc,null);
+		}
 	}else {
 		String destination=instruction[1].substring(0,instruction[1].length()-1);
 		String operand1=instruction[2].substring(0,instruction[2].length()-1);
 		String operand2=instruction[3];
-		return type+" "+" "+destination+" "+operand1+" "+operand2;
+		TableEntity alu=new TableEntity(type,destination,operand1,operand2);
 	}
 }
 public static void main(String[] args) throws FileNotFoundException {
@@ -34,7 +39,7 @@ public static void main(String[] args) throws FileNotFoundException {
      Scanner myReader = new Scanner(instructions);
      while (myReader.hasNextLine()) {
        String instruction = myReader.nextLine();
-       System.out.println(Interpret(instruction));
+       Interpret(instruction);
       }
      myReader.close();
 }

@@ -5,6 +5,28 @@ public class Main {
 public static void Interpret(String Instruction) {
 	String[] instruction=Instruction.split(" ");
 	String type="";
+
+	if(instruction.length==2) {
+		
+		if(instruction[0].equals("L.D")) {
+			   type="load";
+			}else if(instruction[0].equals("S.D")) {
+				type="store";
+			}else if(instruction[0].equals("ADD.D")) {
+				type="add";
+			}else if(instruction[0].equals("SUB.D")) {
+				type="sub";
+			}else if(instruction[0].equals("MUL.D")) {
+				
+				type="mult";
+			}else if(instruction[0].equals("DIV.D")) {
+				type="div";
+			}
+		int cycles=Integer.valueOf(instruction[1]);
+		
+	}else {
+		
+	
 	if(instruction[0].equals("L.D")) {
 	   type="load";
 	}else if(instruction[0].equals("S.D")) {
@@ -33,14 +55,18 @@ public static void Interpret(String Instruction) {
 		String operand2=instruction[3];
 		TableEntity alu=new TableEntity(type,destination,operand1,operand2);
 	}
+	
+	}
 }
 public static void main(String[] args) throws FileNotFoundException {
 	 File instructions = new File("input3.txt");
      Scanner myReader = new Scanner(instructions);
      while (myReader.hasNextLine()) {
        String instruction = myReader.nextLine();
-       Interpret(instruction);
-      }
+       if(instruction.length()>0) {
+    	Interpret(instruction);
+       }     
+     }
      myReader.close();
 }
 }

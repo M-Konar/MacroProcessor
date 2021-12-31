@@ -1,3 +1,5 @@
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.*;
 public class Simulation {
 	Hashtable<String, Integer> type_cycles = new Hashtable<String, Integer>();
@@ -447,9 +449,65 @@ public void whoNeedsMeAssign(ArrayList<String> whoNM,String required,double valu
 		return true;
 	}
 	
-	public void loadInput() {
-		//TODO: fill the instruction table with the inputs from the input.txt 
-		//TODO: fill the instruction types from the input.txt file
+	public void loadInput(String Instruction) {
+		String[] instruction=Instruction.split(" ");
+		String type="";
+
+		if(instruction.length==2) {
+			
+			if(instruction[0].equals("L.D")) {
+				   type="load";
+				}else if(instruction[0].equals("S.D")) {
+					type="store";
+				}else if(instruction[0].equals("ADD.D")) {
+					type="add";
+				}else if(instruction[0].equals("SUB.D")) {
+					type="sub";
+				}else if(instruction[0].equals("MUL.D")) {
+					
+					type="mult";
+				}else if(instruction[0].equals("DIV.D")) {
+					type="div";
+				}
+			int cycles=Integer.valueOf(instruction[1]);
+			type_cycles.put(instruction[0],cycles);
+			System.out.println(instruction[0]+" "+cycles);
+		}else {
+			
+		
+		if(instruction[0].equals("L.D")) {
+		   type="load";
+		}else if(instruction[0].equals("S.D")) {
+			type="store";
+		}else if(instruction[0].equals("ADD.D")) {
+			type="add";
+		}else if(instruction[0].equals("SUB.D")) {
+			type="sub";
+		}else if(instruction[0].equals("MUL.D")) {
+			type="mult";
+		}else if(instruction[0].equals("DIV.D")) {
+			type="div";
+		}
+		if(type.equals("load")||type.equals("store")) {
+			String dstsrc=instruction[1].substring(0,instruction[1].length()-1);
+			int address=Integer.valueOf(instruction[2]);
+			String add=instruction[2];
+			if(type.equals("load")) {
+			TableEntity ld=new TableEntity(instruction[0],dstsrc,add,null);
+			instructionTable.add(ld);
+			}else {
+				TableEntity st=new TableEntity(instruction[0],add,dstsrc,null);
+			 instructionTable.add(st);
+			}
+		}else {
+			String destination=instruction[1].substring(0,instruction[1].length()-1);
+			String operand1=instruction[2].substring(0,instruction[2].length()-1);
+			String operand2=instruction[3];
+			TableEntity alu=new TableEntity(instruction[0],destination,operand1,operand2);
+			instructionTable.add(alu);
+		}
+		
+		}
 		
 	}
 	public  void printOutput() {
@@ -481,10 +539,19 @@ public void whoNeedsMeAssign(ArrayList<String> whoNM,String required,double valu
 		}
 	}
 
-	public static void main (String [] args) {
+	public static void main (String [] args) throws FileNotFoundException {
 		//String instructionsFile = File.read
 		Simulation s =new Simulation();
-
+		File instructions = new File("input3.txt");
+	     Scanner myReader = new Scanner(instructions);
+	     while (myReader.hasNextLine()) {
+	       String instruction = myReader.nextLine();
+	       if(instruction.length()>0) {
+	    	s.loadInput(instruction);
+	       }     
+	     }
+	     myReader.close();
+	     /*
 		ArrayList<TableEntity> test=new ArrayList<TableEntity>();
 		//test.add(new TableEntity("S.D","F7","7","0"));
 		test.add(new TableEntity("L.D","F6","32","0"));
@@ -500,5 +567,6 @@ public void whoNeedsMeAssign(ArrayList<String> whoNM,String required,double valu
 		s.initialize(test);
 		s.simulate();
 		System.out.println(s.memory.get(7));
+		*/
 	}
 }

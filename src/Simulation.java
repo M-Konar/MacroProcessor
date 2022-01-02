@@ -13,8 +13,8 @@ public class Simulation {
 	
 	int clock = 1;
 	
-	public void initialize(ArrayList<TableEntity> test) {
-		instructionTable=test;
+	public void initialize() {
+		
 		for (int i = 0; i < 1024; i++) {
 			memory.add(0.0);
 		}
@@ -31,12 +31,12 @@ public class Simulation {
 			addSubStation.add( new ALUEntity());
 			mulDivStation.add( new ALUEntity());
 		}
-		type_cycles.put("L.D", 2);
-		type_cycles.put("S.D", 1);
-		type_cycles.put("MUL.D", 10);
-		type_cycles.put("DIV.D", 40);
-		type_cycles.put("ADD.D", 2);
-		type_cycles.put("SUB.D", 2);
+		//type_cycles.put("L.D", 2);
+		//type_cycles.put("S.D", 1);
+		//type_cycles.put("MUL.D", 10);
+		//type_cycles.put("DIV.D", 40);
+		//type_cycles.put("ADD.D", 2);
+		//type_cycles.put("SUB.D", 2);
 	}
 	
 	public static int isFull(ArrayList<MemoryEntity> array,int size) {
@@ -248,6 +248,7 @@ public void whoNeedsMeAssign(ArrayList<String> whoNM,String required,double valu
 	public void simulate() {
 		// this function represents the flow 
 		//TODO make sure to print at the end of each cycle 
+		initialize();
 		int instTableIndex = 0;
 		//boolean isIssued = false;
 
@@ -497,45 +498,69 @@ public void whoNeedsMeAssign(ArrayList<String> whoNM,String required,double valu
 			instructionTable.add(new TableEntity(instruction[0],dstsrc,add,"0"));
 			}else {
 				//TableEntity st=new TableEntity(instruction[0],add,dstsrc,"0");
-			 instructionTable.add(new TableEntity(instruction[0],add,dstsrc,"0"));
+			 instructionTable.add(new TableEntity(instruction[0],dstsrc,add,"0"));
 			}
-		}else {
+		System.out.println(instruction[0]+" "+dstsrc+" "+add);
+		}
+		else {
 			String destination=instruction[1].substring(0,instruction[1].length()-1);
 			String operand1=instruction[2].substring(0,instruction[2].length()-1);
 			String operand2=instruction[3];
 			//TableEntity alu=new TableEntity(instruction[0],destination,operand1,operand2);
 			instructionTable.add(new TableEntity(instruction[0],destination,operand1,operand2));
+			System.out.println(instruction[0]+" "+destination+" "+operand1+" "+operand2);
 		}
-		
+	
 		}
 		
 	}
 	public  void printOutput() {
 		System.out.println("Clock Cycle: " + clock);
+		System.out.println();
 		System.out.println("RegFileContent");
 		for (int i = 0; i < registerFile.size(); i++) {
-			System.out.println(registerFile.get(i).regName + " " + registerFile.get(i).Qi + " " + registerFile.get(i).value + " ");
+			System.out.println(registerFile.get(i).regName + " " +"Availability:"+" "+ registerFile.get(i).Qi + " " +"Value: "+ registerFile.get(i).value + " ");
 		}
+		System.out.println();
 		System.out.println("TableContent");
 		for (int i = 0; i < instructionTable.size(); i++) {
-			System.out.println(instructionTable.get(i).opCode + " " +instructionTable.get(i).dist 
-					+ " " +instructionTable.get(i).j + " " + instructionTable.get(i).k + " "
-					+ instructionTable.get(i).issueCycle + " " + instructionTable.get(i).eStartCycle + " "
-					+ instructionTable.get(i).eEndCycle + " " + instructionTable.get(i).writeResult + " ");
+			if(!(instructionTable.get(i).opCode.equals("L.D")||instructionTable.get(i).opCode.equals("S.D"))) {
+			System.out.println("opCode: "+instructionTable.get(i).opCode + " " +"destination: "+instructionTable.get(i).dist 
+					+ " " +"operand1: "+instructionTable.get(i).j + " operand2: " + instructionTable.get(i).k + " issueCycle: "
+					+ instructionTable.get(i).issueCycle + " StartCycle: " + instructionTable.get(i).eStartCycle + " EndCycle: "
+					+ instructionTable.get(i).eEndCycle + " writeResult: " + instructionTable.get(i).writeResult + " ");
+			}else {
+				System.out.println("opCode: "+instructionTable.get(i).opCode + " " +"Register: "+instructionTable.get(i).dist 
+						+ " " +"address: "+instructionTable.get(i).j  + " issueCycle: "
+						+ instructionTable.get(i).issueCycle + " StartCycle: " + instructionTable.get(i).eStartCycle + " EndCycle: "
+						+ instructionTable.get(i).eEndCycle + " writeResult: " + instructionTable.get(i).writeResult + " ");
+			}
 		}
+		System.out.println();
 		System.out.println("AddSubStation");
 		for (int i = 0; i < addSubStation.size(); i++) {
-			System.out.println(addSubStation.get(i).busy + " " + addSubStation.get(i).op + " " 
-					+ addSubStation.get(i).Vj + " " + addSubStation.get(i).Vk + " " 
-					+ addSubStation.get(i).Qj + " " + addSubStation.get(i).Qk + " "
-					+ addSubStation.get(i).whoNeedsMe + " " + addSubStation.get(i).index + " ");
+			System.out.println("Busy: "+addSubStation.get(i).busy + " operation: " + addSubStation.get(i).op + " Vj: " 
+					+ addSubStation.get(i).Vj + " Vk: " + addSubStation.get(i).Vk + " Qj: " 
+					+ addSubStation.get(i).Qj + " Qk: " + addSubStation.get(i).Qk + " WhoNeedsMe: "
+					+ addSubStation.get(i).whoNeedsMe + " Index: " + addSubStation.get(i).index + " ");
 		}
+		System.out.println();
 		System.out.println("MulDivStation");
 		for (int i = 0; i < mulDivStation.size(); i++) {
-			System.out.println(mulDivStation.get(i).busy + " " + mulDivStation.get(i).op + " " 
-					+ mulDivStation.get(i).Vj + " " + mulDivStation.get(i).Vk + " " 
-					+ mulDivStation.get(i).Qj + " " + mulDivStation.get(i).Qk + " "
-					+ mulDivStation.get(i).whoNeedsMe + " " + mulDivStation.get(i).index + " ");
+			System.out.println("Busy: "+mulDivStation.get(i).busy + " operation: " + mulDivStation.get(i).op + " Vj: " 
+					+ mulDivStation.get(i).Vj + " Vk: " + mulDivStation.get(i).Vk + " Qj: " 
+					+ mulDivStation.get(i).Qj + " Qk: " + mulDivStation.get(i).Qk + " WhoNeedsMe: "
+					+ mulDivStation.get(i).whoNeedsMe + " Index: " + mulDivStation.get(i).index + " ");
+		}
+		System.out.println();
+		System.out.println("LoadStation");
+		for(int i=0;i<loadStation.size();i++) {
+			System.out.println("Index: "+loadStation.get(i).index+" Busy: "+loadStation.get(i).busy+" Address: "+loadStation.get(i).address+" WhoNeedsMe: "+loadStation.get(i).whoNeedsMe);
+		}
+		System.out.println();
+		System.out.println("StoreStation");
+		for(int i=0;i<loadStation.size();i++) {
+			System.out.println("Index: "+storeStation.get(i).index+" Busy: "+storeStation.get(i).busy+" Address: "+storeStation.get(i).address+" WhoNeedsMe: "+storeStation.get(i).whoNeedsMe);
 		}
 	}
 
@@ -564,8 +589,9 @@ public void whoNeedsMeAssign(ArrayList<String> whoNM,String required,double valu
 		//test.add(new TableEntity("SUB.D","F5","F6","F1"));
 		//test.add(new TableEntity("SUB.D","F10","F4","F2"));
 		test.add(new TableEntity("ADD.D","F6","F8","F2"));
-		s.initialize(test);
 		*/
+		
+		
 		s.simulate();
 		//System.out.println(s.memory.get(7));
 		

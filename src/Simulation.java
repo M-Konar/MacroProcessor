@@ -472,7 +472,7 @@ public void whoNeedsMeAssign(ArrayList<String> whoNM,String required,double valu
 				}
 			int cycles=Integer.valueOf(instruction[1]);
 			type_cycles.put(instruction[0],cycles);
-			System.out.println(instruction[0]+" "+cycles);
+			
 		}else {
 			
 		
@@ -500,7 +500,7 @@ public void whoNeedsMeAssign(ArrayList<String> whoNM,String required,double valu
 				//TableEntity st=new TableEntity(instruction[0],add,dstsrc,"0");
 			 instructionTable.add(new TableEntity(instruction[0],dstsrc,add,"0"));
 			}
-		System.out.println(instruction[0]+" "+dstsrc+" "+add);
+		
 		}
 		else {
 			String destination=instruction[1].substring(0,instruction[1].length()-1);
@@ -508,7 +508,7 @@ public void whoNeedsMeAssign(ArrayList<String> whoNM,String required,double valu
 			String operand2=instruction[3];
 			//TableEntity alu=new TableEntity(instruction[0],destination,operand1,operand2);
 			instructionTable.add(new TableEntity(instruction[0],destination,operand1,operand2));
-			System.out.println(instruction[0]+" "+destination+" "+operand1+" "+operand2);
+			
 		}
 	
 		}
@@ -567,7 +567,7 @@ public void whoNeedsMeAssign(ArrayList<String> whoNM,String required,double valu
 	public static void main (String [] args) throws FileNotFoundException {
 		//String instructionsFile = File.read;
 		Simulation s =new Simulation();
-	File instructions = new File("input3.txt");
+	File instructions = new File("input.txt");
 	     Scanner myReader = new Scanner(instructions);
 	     while (myReader.hasNextLine()) {
 	       String instruction = myReader.nextLine();

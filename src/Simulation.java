@@ -493,18 +493,18 @@ public void whoNeedsMeAssign(ArrayList<String> whoNM,String required,double valu
 			int address=Integer.valueOf(instruction[2]);
 			String add=instruction[2];
 			if(type.equals("load")) {
-			TableEntity ld=new TableEntity(instruction[0],dstsrc,add,null);
-			instructionTable.add(ld);
+			//TableEntity ld=new TableEntity(instruction[0],dstsrc,add,"0");
+			instructionTable.add(new TableEntity(instruction[0],dstsrc,add,"0"));
 			}else {
-				TableEntity st=new TableEntity(instruction[0],add,dstsrc,null);
-			 instructionTable.add(st);
+				//TableEntity st=new TableEntity(instruction[0],add,dstsrc,"0");
+			 instructionTable.add(new TableEntity(instruction[0],add,dstsrc,"0"));
 			}
 		}else {
 			String destination=instruction[1].substring(0,instruction[1].length()-1);
 			String operand1=instruction[2].substring(0,instruction[2].length()-1);
 			String operand2=instruction[3];
-			TableEntity alu=new TableEntity(instruction[0],destination,operand1,operand2);
-			instructionTable.add(alu);
+			//TableEntity alu=new TableEntity(instruction[0],destination,operand1,operand2);
+			instructionTable.add(new TableEntity(instruction[0],destination,operand1,operand2));
 		}
 		
 		}
@@ -540,9 +540,9 @@ public void whoNeedsMeAssign(ArrayList<String> whoNM,String required,double valu
 	}
 
 	public static void main (String [] args) throws FileNotFoundException {
-		//String instructionsFile = File.read
+		//String instructionsFile = File.read;
 		Simulation s =new Simulation();
-		File instructions = new File("input3.txt");
+	File instructions = new File("input3.txt");
 	     Scanner myReader = new Scanner(instructions);
 	     while (myReader.hasNextLine()) {
 	       String instruction = myReader.nextLine();
@@ -551,7 +551,7 @@ public void whoNeedsMeAssign(ArrayList<String> whoNM,String required,double valu
 	       }     
 	     }
 	     myReader.close();
-	     /*
+	    /*
 		ArrayList<TableEntity> test=new ArrayList<TableEntity>();
 		//test.add(new TableEntity("S.D","F7","7","0"));
 		test.add(new TableEntity("L.D","F6","32","0"));
@@ -565,8 +565,9 @@ public void whoNeedsMeAssign(ArrayList<String> whoNM,String required,double valu
 		//test.add(new TableEntity("SUB.D","F10","F4","F2"));
 		test.add(new TableEntity("ADD.D","F6","F8","F2"));
 		s.initialize(test);
-		s.simulate();
-		System.out.println(s.memory.get(7));
 		*/
+		s.simulate();
+		//System.out.println(s.memory.get(7));
+		
 	}
 }

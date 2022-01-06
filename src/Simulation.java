@@ -567,7 +567,7 @@ public void whoNeedsMeAssign(ArrayList<String> whoNM,String required,double valu
 	public static void main (String [] args) throws FileNotFoundException {
 		//String instructionsFile = File.read;
 		Simulation s =new Simulation();
-	File instructions = new File("input.txt");
+	File instructions = new File("input3.txt");
 	     Scanner myReader = new Scanner(instructions);
 	     while (myReader.hasNextLine()) {
 	       String instruction = myReader.nextLine();
@@ -593,6 +593,7 @@ public void whoNeedsMeAssign(ArrayList<String> whoNM,String required,double valu
 		
 		
 		s.simulate();
+		System.out.println(s.memory.get(300));
 		//System.out.println(s.memory.get(7));
 		
 	}
